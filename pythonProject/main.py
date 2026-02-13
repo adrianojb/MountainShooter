@@ -9,7 +9,7 @@ print('loop start')
 while True:
     # Check for all events
     for event in pygame.event.get():
-     if event.type == pygame.QUIT:
-         print('quitting...')
-      pygame.quit()  # Close window
-      quit()  # end pygame
+        if event.type == pygame.QUIT:
+            print('quitting...')
+        pygame.quit()  # Close window
+        quit()  # end pygame
