@@ -2,24 +2,28 @@
 # -*- coding: utf-8 -*-
 import sys
 from io import text_encoding
+from random import random
+from secrets import choice
 
 import pygame.display
 from pygame import Surface, Rect
 from pygame.font import Font
-
-from code.Const import COLOR_WHITE
+from code.Const import COLOR_WHITE, MENU_OPTION, EVENT_ENEMY, SPAWN_TIME
 from code.entity import Entity
 from code.entityFactory import EntityFactory
 
-
 class Level:
     def __init__(self, window, name, game_mode):
+        self.timeout = 20000  # 20 segundos
         self.window = window
         self.name = name
         self.game_mode = game_mode
         self.entity_list = list[Entity] = []
         self.entity_list.extend(EntityFactory.get_entity('LevelBg'))
-        self.timeout = 20000 # 20 segundos
+        self.entity_list.append(EntityFactory.get_entity('Player1'))
+        if game_mode in [MENU_OPTION[1], MENU_OPTION[2]]:
+            self.entity_list.append(EntityFactory.get_entity('Player2'))
+            pygame.time.set_timer(EVENT_ENEMY, SPAWN_TIME)
 
     def run(self, ):
         pygame.mixer_music.load(f'asset/{self.name}.mp3')
@@ -35,18 +39,20 @@ class Level:
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
-            # printed text
-            self.level_text(  14,f'{self.name} Timeout: {self.timeout / 1000 :.f}s',COLOR_WHITE, (10, 5))
-            self.level_text(14, f'fps:{clock.get_fps() :.0f}' ,COLOR_WHITE, (10,COLOR_WHITE - 35))
-            self.level_text(14, f'entidade: {len(self.entity_list)}',COLOR_WHITE,   (10,COLOR_WHITE - 20))
-            pygame.display.flip()
-        pass
 
-    def level_text(self, text_size: int,text: str,text_color: tuple,text_pos:tuple):
+                if event.type == EVENT_ENEMY:
+                    choice = random.choice(('Enemy1', 'Enemy2'))
+                    self.entity_list.append(EntityFactory.get_entity(choice))
+
+                    # printed text
+                    self.level_text(14, f'{self.name} Timeout: {self.timeout / 1000 :.f}s', COLOR_WHITE, (10, 5))
+                    self.level_text(14, f'fps:{clock.get_fps() :.0f}', COLOR_WHITE, (10, COLOR_WHITE - 35))
+                    self.level_text(14, f'entidade: {len(self.entity_list)}', COLOR_WHITE, (10, COLOR_WHITE - 20))
+                    pygame.display.flip()
+                pass
+
+    def level_text(self, text_size: int, text: str, text_color: tuple, text_pos: tuple):
         text_font: Font = pygame.SysFont(name="Lucida Sans Typewriter", size=text_size)
-        text_surf: Surface = text_font.render(text, True,text_color).convert_alpha()
+        text_surf: Surface = text_font.render(text, True, text_color).convert_alpha()
         text_rect: Rect = text_surf.get_rect(left=text_pos[0], top=text_pos[1])
-        self.window.blit(source=text_surf,dest=text_rect)
-
-
-
+        self.window.blit(source=text_surf, dest=text_rect)
